@@ -11,7 +11,7 @@ const getAllProductsStatic = async (req,res) => {
 }
 
 const getAllProducts = async(req,res) => {
-  const { featured,company,name,sort,fields } = req.query
+  const { featured, company, name, sort, fields, numericFilters } = req.query
 
   const queryObject = {}
 
@@ -25,6 +25,25 @@ const getAllProducts = async(req,res) => {
   if(name)
   {
     queryObject.name = { $regex : name , $options : 'i'}
+  }
+
+  if(numericFilters)
+  {
+    const operators = {
+      '>' : '$gt',
+      '>=' : '$gte',
+      '=' : '$eq',
+      '<' : '$lt',
+      '<=' : '$lte'
+    }
+    const regEx = /\b(<|>|<=|>=|=)\b/ 
+    let filters = numericFilters.replace(regEx , (match) => {
+      return `-${operators[match]}-`
+    });
+    filters = filters.split(',').forEach((item) => {
+      let [ field , operator , value ] = item.split('-');
+      queryObject[field] = { [operator] : Number(value) }
+    })
   }
 
   let results = Products.find(queryObject)
@@ -46,6 +65,7 @@ const getAllProducts = async(req,res) => {
   }
 
   const products = await results
+  console.log(queryObject)
 
   res.status(200).send({ products : products , nBHits : products.length })
   // res.status(200).json(req.query)

@@ -1,7 +1,8 @@
+const CustomAPIError = require('../errors/custom-error')
 
 const handleError = (err,req,res,next) => {
-  if (err.message == 'Item not found') {
-    return res.status(404).json({ message : err.message })
+  if (err instanceof CustomAPIError) {
+    return res.status(err.statusCode).json({ message : err.message })
   }
   else
   {

@@ -64,8 +64,11 @@ const getAllProducts = async(req,res) => {
     results = results.select(fieldsList)
   }
 
-  const products = await results
-  console.log(queryObject)
+  const page = req.query.page || 1
+  const limit = 10
+  const skip = (page-1)*limit
+
+  const products = await results.skip(skip).limit(10)
 
   res.status(200).send({ products : products , nBHits : products.length })
   // res.status(200).json(req.query)
